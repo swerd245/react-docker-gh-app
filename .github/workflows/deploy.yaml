@@ -1,0 +1,29 @@
+name: Deploy Frontend 
+on: 
+  push: 
+    branches: 
+      - main 
+      
+jobs: 
+  build: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - users: actions/checkout@v3 
+      - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin 
+      - run: docker build -t swerd245/react-test -f Dockerfile.dev . 
+      - run: docker run -e CI=true swerd245/react-test npm test 
+      
+      - name: Generate deployment package 
+        run: zip -r deploy.zip . -x '*.git*' 
+        
+      - name: Deploy to EB 
+        uses: einaregilsson/beanstalk-deploy@v18 
+        with: 
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }} 
+          aws_secret_ket: ${{ secrets.AWS_SCRET_KEY }} 
+          application_name: react-docker-gh-test 
+          enviroment_name: React-docker-gh-test-env 
+          existing_bucket_name: elasticbeanstalk-ap-northeast-2-211125418324 
+          region: ap-northeast-2 
+          version_label: ${{ github.sha }} 
+          deployment_package: deploy.zip
