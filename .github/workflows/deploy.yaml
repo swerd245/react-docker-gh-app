@@ -1,8 +1,10 @@
+## 깃헙 액션 테스트
+
 name: Deploy Frontend 
 on: 
   push: 
     branches: 
-      - main
+      - master
       
 jobs: 
   build: 
